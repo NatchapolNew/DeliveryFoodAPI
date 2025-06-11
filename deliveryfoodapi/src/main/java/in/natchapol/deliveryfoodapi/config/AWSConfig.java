@@ -7,7 +7,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-
+//บอกว่าคลาสนี้ใช้สร้างbeanเพื่อให้คลาสอื่นๆเรียกใช้bean
 @Configuration
 public class AWSConfig {
     @Value("${aws.access.key}")
