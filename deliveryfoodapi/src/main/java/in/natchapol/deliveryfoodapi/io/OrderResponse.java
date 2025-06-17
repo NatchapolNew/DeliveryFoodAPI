@@ -1,5 +1,6 @@
 package in.natchapol.deliveryfoodapi.io;
 
+import com.stripe.model.climate.Order;
 import lombok.Builder;
 import lombok.Data;
 
@@ -14,4 +15,6 @@ public class OrderResponse {
     private String email;
     private double amount;
     private String orderStatus;
+    private List<OrderItem> orderItems;
+
 }

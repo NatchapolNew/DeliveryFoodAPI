@@ -13,6 +13,9 @@ import lombok.AllArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @AllArgsConstructor
 public class OrderServiceImpl implements OrderService {
@@ -38,6 +41,32 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
+    @Override
+    public List<OrderResponse> getUserOrders() {
+        String logginUserId = userService.findUserId();
+         List<OrderEntity>list = orderRepository.findByUserId(logginUserId);
+         return list.stream().map(entity->convertToResponse(entity)).collect(Collectors.toList());
+
+    }
+
+    @Override
+    public void removeOrder(String orderId) {
+        orderRepository.deleteById(orderId);
+    }
+
+    @Override
+    public List<OrderResponse> getAllUserOrders() {
+        List<OrderEntity>list = orderRepository.findAll();
+        return list.stream().map(entity ->convertToResponse(entity)).collect(Collectors.toList());
+    }
+
+    @Override
+    public void updateOrderStatus(String orderId, String status) {
+       OrderEntity entity = orderRepository.findById(orderId).orElseThrow(()-> new RuntimeException("Order not found"));
+       entity.setOrderStatus(status);
+       orderRepository.save(entity);
+    }
+
     private OrderResponse convertToResponse(OrderEntity newOrder) {
         return OrderResponse.builder()
                 .id(newOrder.getId())
@@ -47,6 +76,7 @@ public class OrderServiceImpl implements OrderService {
                 .phoneNumber(newOrder.getPhoneNumber())
                 .email(newOrder.getEmail())
                 .orderStatus(newOrder.getOrderStatus())
+                .orderItems(newOrder.getOrderedItems())
                 .build();
     }
 

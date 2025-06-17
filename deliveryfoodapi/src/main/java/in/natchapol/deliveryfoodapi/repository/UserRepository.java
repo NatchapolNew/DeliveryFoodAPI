@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface UserRepository extends MongoRepository<UserEntity,String> {
 
 //optionalคือการจัดการค่าnullจะมีหรือไม่มีค่าก็ได้
+
    Optional<UserEntity> findByEmail(String email);
 }
