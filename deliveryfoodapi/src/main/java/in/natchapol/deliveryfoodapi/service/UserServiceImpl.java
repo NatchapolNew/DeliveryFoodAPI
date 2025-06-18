@@ -1,6 +1,7 @@
 package in.natchapol.deliveryfoodapi.service;
 
 import in.natchapol.deliveryfoodapi.entity.UserEntity;
+import in.natchapol.deliveryfoodapi.exception.UserAlreadyExistsException;
 import in.natchapol.deliveryfoodapi.io.UserRequest;
 import in.natchapol.deliveryfoodapi.io.UserResponse;
 import in.natchapol.deliveryfoodapi.repository.UserRepository;
@@ -22,10 +23,16 @@ public class UserServiceImpl implements UserService{
 
 
     @Override
+
     public UserResponse registerUser(UserRequest request) {
+      Optional <UserEntity> user = userRepository.findByEmail(request.getEmail());
+        if(user.isPresent()){
+            throw new UserAlreadyExistsException("มีEmailนี้แล้วในระบบ");
+        }else {
        UserEntity newUser = convertToEntity(request);
        newUser = userRepository.save(newUser);
        return convertToResponse(newUser);
+        }
     }
 
     @Override
