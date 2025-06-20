@@ -19,6 +19,8 @@ public class AWSConfig {
     @Value("${aws.region}")
     private String region;
 
+
+
     @Bean
     public S3Client s3Client() {
         return S3Client.builder().region(Region.of(region))

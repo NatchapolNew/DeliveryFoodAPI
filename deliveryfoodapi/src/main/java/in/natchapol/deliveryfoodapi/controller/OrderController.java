@@ -2,9 +2,11 @@ package in.natchapol.deliveryfoodapi.controller;
 
 import in.natchapol.deliveryfoodapi.io.OrderRequest;
 import in.natchapol.deliveryfoodapi.io.OrderResponse;
+import in.natchapol.deliveryfoodapi.io.StripeResponse;
 import in.natchapol.deliveryfoodapi.service.OrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +22,13 @@ public class OrderController {
     public OrderResponse createOrderWithPayment(@RequestBody OrderRequest request) {
         OrderResponse res = orderService.createOrderWithPayment(request);
         return res;
+    }
+
+    @PostMapping("/checkout")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<StripeResponse> StripeCheckOut(@RequestBody OrderRequest request){
+        StripeResponse res = orderService.stripeCheckOut(request);
+        return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
     @GetMapping

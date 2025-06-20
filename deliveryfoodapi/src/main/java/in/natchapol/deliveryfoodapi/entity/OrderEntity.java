@@ -26,5 +26,5 @@ public class OrderEntity {
     private List<OrderItem> orderedItems;
     private double amount;
     private String orderStatus;
-
+    private String stripeStatus;
 }
