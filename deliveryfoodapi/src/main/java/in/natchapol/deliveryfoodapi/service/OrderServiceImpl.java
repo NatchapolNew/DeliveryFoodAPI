@@ -8,6 +8,7 @@ import in.natchapol.deliveryfoodapi.config.AWSConfig;
 import in.natchapol.deliveryfoodapi.config.StripeConfig;
 import in.natchapol.deliveryfoodapi.entity.OrderEntity;
 
+import in.natchapol.deliveryfoodapi.exception.UserAlreadyExistsException;
 import in.natchapol.deliveryfoodapi.io.OrderItem;
 import in.natchapol.deliveryfoodapi.io.OrderRequest;
 import in.natchapol.deliveryfoodapi.io.OrderResponse;
@@ -49,6 +50,54 @@ public class OrderServiceImpl implements OrderService {
         newOrder.setUserId(logginUserId);
         newOrder = orderRepository.save(newOrder);
 
+        //stripe payment
+        Stripe.apiKey = stripeKey.getStripeKey();
+
+        List<SessionCreateParams.LineItem> lineItems = new ArrayList<>();
+        for (OrderItem item : request.getOrderedItem()) {
+            SessionCreateParams.LineItem.PriceData.ProductData productData = SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                    .setName(item.getName())
+                    .build();
+
+            SessionCreateParams.LineItem.PriceData priceData = SessionCreateParams.LineItem.PriceData.builder()
+                    .setCurrency("thb")
+                    .setUnitAmount((long) item.getPrice() * 100)
+                    .setProductData(productData)
+                    .build();
+
+            SessionCreateParams.LineItem lineItem = SessionCreateParams.LineItem.builder()
+                    .setQuantity((long) item.getQuantity())
+                    .setPriceData(priceData).build();
+
+            lineItems.add(lineItem);
+        }
+
+        SessionCreateParams params = SessionCreateParams.builder()
+                .setMode(SessionCreateParams.Mode.PAYMENT)
+                .setSuccessUrl("http://localhost:8080/success")
+                .setCancelUrl("http://localhost:8080/cancel")
+                .addAllLineItem(lineItems)
+                .build();
+
+
+        Session session = null;
+        try {
+            session =  Session.create(params);
+        }catch(StripeException ex){
+            throw new RuntimeException("Stripe session creation failed: " + ex.getMessage());
+
+        }
+        newOrder.setStripeStatus(session.getStatus());
+        newOrder.setSessionUrl(session.getUrl());
+        newOrder.setSessionId(session.getId());
+        newOrder.setMessage("Payment session created");
+
+        if(session.getStatus().equals("SUCCESS")){
+        newOrder = orderRepository.save(newOrder);
+        }else{
+            throw new UserAlreadyExistsException("ชำระเงินไม่สำเร็จ");
+        }
+
         return convertToResponse(newOrder);
 
 
@@ -80,51 +129,51 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(entity);
     }
 
-    @Override
-    public StripeResponse stripeCheckOut(OrderRequest request) {
-        Stripe.apiKey = stripeKey.getStripeKey();
-
-        List<SessionCreateParams.LineItem> lineItems = new ArrayList<>();
-        for (OrderItem item : request.getOrderedItem()) {
-            SessionCreateParams.LineItem.PriceData.ProductData productData = SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                    .setName(item.getName())
-                    .build();
-
-            SessionCreateParams.LineItem.PriceData priceData = SessionCreateParams.LineItem.PriceData.builder()
-                    .setCurrency("thb")
-                    .setUnitAmount((long) item.getPrice() * 100)
-                    .setProductData(productData)
-                    .build();
-
-            SessionCreateParams.LineItem lineItem = SessionCreateParams.LineItem.builder()
-                    .setQuantity((long) item.getQuantity())
-                    .setPriceData(priceData).build();
-
-            lineItems.add(lineItem);
-        }
-
-        SessionCreateParams params = SessionCreateParams.builder()
-                .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl("http://localhost:8080/success")
-                .setCancelUrl("http://localhost:8080/cancel")
-                .addAllLineItem(lineItems)
-                .build();
-
-
-        Session session = null;
-            try {
-                session =  Session.create(params);
-            }catch(StripeException ex){
-                throw new RuntimeException("Stripe session creation failed: " + ex.getMessage());
-
-            }
-        return StripeResponse.builder()
-                .status("SUCCESS")
-                .message("Payment session created")
-                .sessionId(session.getId())
-                .sessionUrl(session.getUrl())
-                .build();
-    }
+//    @Override
+//    public StripeResponse stripeCheckOut(OrderRequest request) {
+////        Stripe.apiKey = stripeKey.getStripeKey();
+////
+////        List<SessionCreateParams.LineItem> lineItems = new ArrayList<>();
+////        for (OrderItem item : request.getOrderedItem()) {
+////            SessionCreateParams.LineItem.PriceData.ProductData productData = SessionCreateParams.LineItem.PriceData.ProductData.builder()
+////                    .setName(item.getName())
+////                    .build();
+////
+////            SessionCreateParams.LineItem.PriceData priceData = SessionCreateParams.LineItem.PriceData.builder()
+////                    .setCurrency("thb")
+////                    .setUnitAmount((long) item.getPrice() * 100)
+////                    .setProductData(productData)
+////                    .build();
+////
+////            SessionCreateParams.LineItem lineItem = SessionCreateParams.LineItem.builder()
+////                    .setQuantity((long) item.getQuantity())
+////                    .setPriceData(priceData).build();
+////
+////            lineItems.add(lineItem);
+////        }
+////
+////        SessionCreateParams params = SessionCreateParams.builder()
+////                .setMode(SessionCreateParams.Mode.PAYMENT)
+////                .setSuccessUrl("http://localhost:8080/success")
+////                .setCancelUrl("http://localhost:8080/cancel")
+////                .addAllLineItem(lineItems)
+////                .build();
+////
+////
+////        Session session = null;
+////            try {
+////                session =  Session.create(params);
+////            }catch(StripeException ex){
+////                throw new RuntimeException("Stripe session creation failed: " + ex.getMessage());
+////
+////            }
+//        return StripeResponse.builder()
+//                .status("SUCCESS")
+//                .message("Payment session created")
+//                .sessionId(session.getId())
+//                .sessionUrl(session.getUrl())
+//                .build();
+//    }
 
 
     private OrderResponse convertToResponse(OrderEntity newOrder) {
@@ -137,7 +186,10 @@ public class OrderServiceImpl implements OrderService {
                 .email(newOrder.getEmail())
                 .orderStatus(newOrder.getOrderStatus())
                 .orderItems(newOrder.getOrderedItems())
-                .status(newOrder.getStripeStatus())
+                .sessionUrl(newOrder.getSessionUrl())
+                .sessionId(newOrder.getSessionId())
+                .stripeStatus(newOrder.getStripeStatus())
+                .message(newOrder.getMessage())
                 .build();
     }
 

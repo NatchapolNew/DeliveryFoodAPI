@@ -27,4 +27,7 @@ public class OrderEntity {
     private double amount;
     private String orderStatus;
     private String stripeStatus;
+    private String message;
+    private String sessionId;
+    private String sessionUrl;
 }

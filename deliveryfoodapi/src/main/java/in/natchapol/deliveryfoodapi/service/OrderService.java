@@ -12,5 +12,4 @@ public interface OrderService {
     void removeOrder(String orderId);
     List<OrderResponse> getAllUserOrders();
     void updateOrderStatus(String orderId,String status);
-    StripeResponse stripeCheckOut(OrderRequest request);
 }

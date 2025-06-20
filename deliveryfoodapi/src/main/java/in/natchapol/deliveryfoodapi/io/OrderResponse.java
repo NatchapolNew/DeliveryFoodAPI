@@ -16,7 +16,7 @@ public class OrderResponse {
     private double amount;
     private String orderStatus;
     private List<OrderItem> orderItems;
-    private String status;
+    private String stripeStatus;
     private String message;
     private String sessionId;
     private String sessionUrl;

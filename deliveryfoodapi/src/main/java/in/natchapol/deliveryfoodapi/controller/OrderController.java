@@ -24,12 +24,12 @@ public class OrderController {
         return res;
     }
 
-    @PostMapping("/checkout")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<StripeResponse> StripeCheckOut(@RequestBody OrderRequest request){
-        StripeResponse res = orderService.stripeCheckOut(request);
-        return ResponseEntity.status(HttpStatus.OK).body(res);
-    }
+//    @PostMapping("/checkout")
+//    @ResponseStatus(HttpStatus.CREATED)
+//    public ResponseEntity<StripeResponse> StripeCheckOut(@RequestBody OrderRequest request){
+//        StripeResponse res = orderService.stripeCheckOut(request);
+//        return ResponseEntity.status(HttpStatus.OK).body(res);
+//    }
 
     @GetMapping
     public List<OrderResponse> getOrders() {
