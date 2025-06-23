@@ -11,4 +11,6 @@ public class StripeConfig {
 
     @Value("${stripe.secretKey}")
     private String stripeKey;
+    @Value("${stripe.endpointSecret}")
+    private String endpointSecret;
 }

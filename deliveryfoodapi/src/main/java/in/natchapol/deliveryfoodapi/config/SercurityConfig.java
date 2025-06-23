@@ -41,7 +41,7 @@ public class SercurityConfig {
                 //csrf(Cross-Site Request Forgery)
                 .csrf(AbstractHttpConfigurer::disable)
                 //อนุญาตให้URLต่อไปนี้ไม่ต้องLogin
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/register", "/api/login","/api/foods/**","/api/orders/all","/api/orders/status/**").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/register", "/api/login","/api/foods/**","/api/orders/all","/api/orders/status/**","/api/orders/webhook/**").permitAll().anyRequest().authenticated())
                 //ไม่ใช้sessionในการจดจำผู้ใช้
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenFilter, UsernamePasswordAuthenticationFilter.class);

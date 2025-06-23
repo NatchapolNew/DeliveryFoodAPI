@@ -19,17 +19,18 @@ public class OrderController {
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public OrderResponse createOrderWithPayment(@RequestBody OrderRequest request) {
-        OrderResponse res = orderService.createOrderWithPayment(request);
+    public StripeResponse createOrderWithPayment(@RequestBody OrderRequest request) {
+        StripeResponse res = orderService.createOrderWithPayment(request);
         return res;
     }
 
-//    @PostMapping("/checkout")
-//    @ResponseStatus(HttpStatus.CREATED)
-//    public ResponseEntity<StripeResponse> StripeCheckOut(@RequestBody OrderRequest request){
-//        StripeResponse res = orderService.stripeCheckOut(request);
-//        return ResponseEntity.status(HttpStatus.OK).body(res);
-//    }
+    @PostMapping("/webhook")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<String> StripeCheckOut(@RequestBody String payload,@RequestHeader("Stripe-Signature") String sigHeader){
+
+        orderService.stripeCheckOut(payload,sigHeader);
+        return ResponseEntity.ok("Success");
+    }
 
     @GetMapping
     public List<OrderResponse> getOrders() {
