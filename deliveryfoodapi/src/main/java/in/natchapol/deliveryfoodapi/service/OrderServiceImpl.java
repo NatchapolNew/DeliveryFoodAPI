@@ -26,6 +26,7 @@ import in.natchapol.deliveryfoodapi.io.OrderRequest;
 import in.natchapol.deliveryfoodapi.io.OrderResponse;
 
 import in.natchapol.deliveryfoodapi.io.StripeResponse;
+import in.natchapol.deliveryfoodapi.repository.CartRepository;
 import in.natchapol.deliveryfoodapi.repository.OrderRepository;
 import lombok.AllArgsConstructor;
 
@@ -56,6 +57,9 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     @Autowired
     private StripeConfig stripeKey;
+
+    @Autowired
+    private final CartRepository cartRepository;
 
 
     @Override
@@ -96,7 +100,7 @@ public class OrderServiceImpl implements OrderService {
 
         SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl("http://localhost:8080/success")
+                .setSuccessUrl("http://localhost:5173")
                 .setCancelUrl("http://localhost:8080/cancel")
                 .addAllLineItem(lineItems)
                 .putMetadata("userId", logginUserId)
@@ -121,7 +125,6 @@ public class OrderServiceImpl implements OrderService {
         stripeResponse.setStatus(session.getStatus());
         stripeResponse.setSessionUrl(session.getUrl());
         stripeResponse.setSessionId(session.getId());
-        stripeResponse.setMessage("Payment session created");
 
 
         return stripeResponse;
@@ -220,8 +223,7 @@ public class OrderServiceImpl implements OrderService {
             order.setOrderedItems(orderedItem);
 
             orderRepository.save(order);
-
-
+            cartRepository.deleteByUserId(userId);
         }
 
         return null;

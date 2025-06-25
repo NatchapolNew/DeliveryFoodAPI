@@ -49,4 +49,10 @@ public class CartController {
 
     }
 
+    //ยังไม่ได้เพิ่มส่วนclient
+    @PostMapping("/removefoodid")
+    public void RemoveFoodIdFromCart(@RequestBody CartRequest foodId){
+        cartService.removeFoodIdFromCart(foodId);
+    }
+
 }
